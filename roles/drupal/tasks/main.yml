@@ -16,27 +16,36 @@
     - php-xml
     - php-mbstring
 
-- name: Download and unarchive drupal
-  unarchive: src=http://ftp.drupal.org/files/projects/drupal-7.8.tar.gz dest=/var/www/html remote_src=yes
+- name: Download drupal files
+  get_url: url={{ item }} dest=/tmp
+  with_items:
+    - "http://ftp.drupal.org/files/projects/drupal-{{ drupal_version }}.tar.gz"
+    - "http://ftp.drupal.org/files/projects/drush-{{ drush_version }}.tar.gz"
 
-- name: Download and unarchive drupal
-  unarchive: src=http://ftp.drupal.org/files/projects/drush-7.x-4.5.tar.gz dest=/tmp remote_src=yes
+- name: Unarchive drupal
+  unarchive: src=/tmp/drupal-{{ drupal_version }}.tar.gz dest=/tmp
 
-- name: Create sql for create database
-  file: path=/tmp/setup.mysql content="CREATE DATABASE IF NOT EXISTS drupaldb;" owner=root group=root mode=0644
+- name: Unarchive drush
+  unarchive: src=/tmp/drush-{{ drush_version }}.tar.gz dest=/tmp
 
-- name: Run init sql script.
-  shell: mysql -u root --password={{ mysql_root_password }} < /tmp/setup.mysql
+- name: Copy drupal to /var/www/html
+  synchronize: src=/tmp/drupal-{{ drupal_version }}/ dest=/var/www/html/
 
-- name: Add cfg mgmt user to sudoers
-  #lineinfile: dest=/etc/httpd/conf/httpd.conf regexp='AllowOverride None' line='{{ item.line }}' state=present
+- name: Create setup sql file (for create database drupaldb)
+  copy: content="CREATE DATABASE IF NOT EXISTS {{ drupal_db_name }};" dest=/tmp/setup.mysql mode=0644
+
+- name: Run setup sql file.
+  shell: mysql -h {{ mysql_host }} -u root --password={{ mysql_root_password }} < /tmp/setup.mysql
+
+- name: Change all 'AllowOverride None' to 'AllowOverride All' /etc/httpd/conf/httpd.conf
+  #lineinfile: dest=/etc/httpd/conf/httpd.conf regexp='AllowOverride None' line='AllowOverride All' state=present
   command: sed -i 's/AllowOverride None/AllowOverride All/g' /etc/httpd/conf/httpd.conf
 
 - name: Start httpd server
   service: name=httpd state=started enabled=yes
 
-- name: Run init sql script. # Todo change this line properly
-  shell: /tmp/drush/drush site-install standard --yes --site-name='Example Site' --account-name=admin --account-pass=admin --db-url=mysql://root:{{ mysql_root_password }}@localhost/drupaldb --db-prefix=drupal_
+- name: Run drush init script.
+  shell: /tmp/drush/drush site-install standard --yes --site-name='{{ drupal_site_name }}' --account-name={{ drupal_admin_username } --account-pass={{ drupal_admin_password }} --db-url=mysql://root:{{ mysql_root_password }}@{{ mysql_host }}/{{ drupal_db_name }} --db-prefix={{ drupal_table_prefix }}
   args:
     chdir: /var/www/html
 

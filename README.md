@@ -8,5 +8,6 @@ sudo yum-config-manager --enable epel
 
 ```
 sudo yum install -y ansible git
+sudo pip install ansible # To fix folder/file permissions
 ```
 

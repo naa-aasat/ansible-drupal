@@ -1,1 +1,9 @@
 mysql_root_password: root
+drupal_site_name: Example Site
+drupal_admin_username: admin
+drupal_admin_password: admin
+drupal_db_name: drupaldb
+drupal_table_prefix: drupal_
+drupal_version: 7.8
+drush_version: 7.x-4.5
+mysql_host: localhost
