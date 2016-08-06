@@ -45,7 +45,7 @@
   service: name=httpd state=started enabled=yes
 
 - name: Run drush init script.
-  shell: /tmp/drush/drush site-install standard --yes --site-name='{{ drupal_site_name }}' --account-name={{ drupal_admin_username } --account-pass={{ drupal_admin_password }} --db-url=mysql://root:{{ mysql_root_password }}@{{ mysql_host }}/{{ drupal_db_name }} --db-prefix={{ drupal_table_prefix }}
+  shell: /tmp/drush/drush site-install standard --yes --site-name='{{ drupal_site_name }}' --account-name={{ drupal_admin_username }} --account-pass={{ drupal_admin_password }} --db-url=mysql://root:{{ mysql_root_password }}@{{ mysql_host }}/{{ drupal_db_name }} --db-prefix={{ drupal_table_prefix }}
   args:
     chdir: /var/www/html
 
